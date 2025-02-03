@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather UI</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(to right, #b3d9ff, #0066cc);
+            overflow: hidden;
+            transition: background 0.8s ease;
+        }
+        .container {
+            position: relative;
+            width: 250px;
+            height: 500px;
+            background: linear-gradient(to right, #b3d9ff, #0066cc);
+            border-radius: 20px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            transition: background 0.8s ease;
+        }
+        .clouds {
+            position: absolute;
+            top: 100px;
+            width: 150px;
+            height: 80px;
+            border-radius: 40px;
+            animation: moveClouds 10s linear infinite;
+             transition: transform 0.8s ease, opacity 0.8s ease;
+            background-size: contain;
+            background-repeat: no-repeat;
+            opacity: 1; /* awan terlihat saat siang */
+        }
+        .clouds:nth-child(2) {
+            top: 150px;
+            left: -100px;
+            animation-duration: 12s;
+        }
+        .star-clouds {
+            position: absolute;
+            top: 100px;
+            width: 3px; /* Ukuran bintang diperkecil */
+            height: 3px; /* Ukuran bintang diperkecil */
+            border-radius: 50%;
+            background-color: transparent;
+           box-shadow: 0 0 1px rgba(255, 255, 255, 0.3);
+            top: calc(var(--star-y));
+            left: calc(var(--star-x));
+            animation: twinkle 1.5s linear infinite, moveStars 8s linear infinite;
+            transform: rotate(0);
+            opacity: 0;
+            transition: opacity 0.8s ease;
+        }
+
+        .night .star-clouds {
+            opacity: 1;
+        }
+
+        .star-clouds:nth-child(2) {
+            animation-delay: 0.3s;
+        }
+        .meteor {
+            position: absolute;
+            top: calc(var(--meteor-y));
+            left: calc(var(--meteor-x));
+            width: 2px; /* Lebar meteor kecil */
+            height: 1px; /* Tinggi meteor kecil */
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            animation: meteorFly 3s linear infinite;
+            opacity: 0;
+            transition: opacity 0.8s ease;
+            transform: rotate(calc(var(--meteor-rotate, 20deg)));  /* menggunakan custom properti */
+        }
+        .meteor::before {
+             content: '';
+            position: absolute;
+            top: 50%;
+            left: -20px;
+            width: 25px; /* Panjang ekor meteor */
+            height: 1px;
+            background: rgba(255, 255, 255, 0.2);
+          }
+       .night .meteor {
+            opacity: 1; /* meteor muncul saat malam */
+        }
+        .sun {
+            position: absolute;
+            top: 100px;
+            left: 50%; /* Posisi tengah akhir */
+            transform: translateX(100%) scale(1); /* Mulai dari kanan */
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            transition: transform 0.8s ease-in-out, background 0.8s ease, opacity 0.8s ease;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-image: url('sun.png');
+            opacity: 0; /* Membuat matahari awal tidak terlihat */
+        }
+
+        .loaded .sun {
+            opacity: 1;
+            transform: translateX(0%) scale(1); /* Muncul dan geser ke tengah saat dimuat */
+        }
+
+        .switch {
+            position: absolute;
+            bottom: 50px;
+           left: 50%;
+            transform: translateX(-50%);
+           width: 80px;
+           height: 30px;
+          background: #fff;
+            border-radius: 15px;
+            display: flex;
+           align-items: center;
+           justify-content: space-between;
+            padding: 5px;
+           box-shadow: inset 0px 2px 5px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+        }
+        .switch div {
+           width: 25px;
+            height: 25px;
+             background: cyan;
+           border-radius: 50%;
+            transition: transform 0.5s ease-in-out, background 0.8s ease;
+        }
+        .active .sun {
+            opacity: 1;
+           transform: translateX(-100%) scale(1);
+            background-image: url('moon.png');
+        }
+        .active .switch div {
+            transform: translateX(45px);
+           background: yellow;
+       }
+       .birds {
+           position: absolute;
+           top: 50px;
+           left: -70px;
+            width: 30px;
+            height: 20px;
+           background: white;
+           border-radius: 50%;
+            transform: rotate(-20deg);
+            animation: moveBirds 8s linear infinite;
+           transition: opacity 0.8s ease;
+       }
+        .birds::before {
+           content: '';
+            position: absolute;
+            width: 30px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+             transform: rotate(40deg);
+             left: 10px;
+       }
+
+        /* Efek Malam */
+         .night {
+            background: linear-gradient(to right, #1a1a2e, #000000);
+         }
+        .night .container {
+           background: linear-gradient(to right, #1a1a2e, #000000);
+        }
+
+       .night .birds {
+           opacity: 0;
+       }
+       .night .clouds {
+          opacity: 0; /* Awan hilang saat malam */
+       }
+         @keyframes moveClouds {
+            0% { left: -200px; }
+            100% { left: 100%; }
+        }
+        @keyframes moveBirds {
+             0% { left: -50px; top: 50px; }
+           50% { top: 40px; }
+             100% { left: 100%; top: 50px; }
+        }
+        @keyframes twinkle {
+           0% { opacity: 0.2; }
+            50% { opacity: 1; }
+             100% { opacity: 0.2; }
+        }
+       @keyframes moveStars {
+          0% { transform: translate(0, 0); }
+          50% { transform: translate(3px, -3px); }
+             100% { transform: translate(0, 0); }
+        }
+         @keyframes meteorFly {
+          0% { transform: translateX(100px) translateY(0) rotate(calc(var(--meteor-rotate, 20deg))) scale(0.5); }
+            100% { transform: translateX(-400px) translateY(calc(var(--meteor-fly-y))) rotate(calc(var(--meteor-rotate, 20deg))) scale(1); }
+        }
+   </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sun"></div>
+        <img class="clouds" src="cloud.png" alt="cloud">
+        <img class="clouds" src="cloud.png" alt="cloud">
+        <div class="birds"></div>
+        <div class="switch" onclick="toggleWeather()">
+             <div></div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.querySelector('.container');
+            container.classList.add('loaded');
+        });
+         function generateStars() {
+            const container = document.querySelector('.container');
+            const numStars = 50;
+            for (let i = 0; i < numStars; i++) {
+               const star = document.createElement('div');
+                star.classList.add('star-clouds');
+               const x = Math.random() * 250;
+                const y = Math.random() * 400 - 50;
+                star.style.setProperty('--star-x', `${x}px`);
+                star.style.setProperty('--star-y', `${y}px`);
+               container.appendChild(star);
+            }
+        }
+       function generateMeteors() {
+            const container = document.querySelector('.container');
+            const numMeteors = 5;
+             for (let i = 0; i < numMeteors; i++) {
+                const meteor = document.createElement('div');
+                meteor.classList.add('meteor');
+                 const isVertical = Math.random() < 0.5;
+                const x = isVertical ? Math.random() * 250 : Math.random() * -100;
+                const y = isVertical ?  Math.random() * -100: Math.random() * 400 - 50;
+                  const flyY = isVertical ? Math.random() * 400 - 50 : 0;
+                 const rotate =  (Math.random() * 40 - 20);
+               meteor.style.setProperty('--meteor-x', `${x}px`);
+                meteor.style.setProperty('--meteor-y', `${y}px`);
+                  meteor.style.setProperty('--meteor-fly-y', `${flyY}px`);
+              meteor.style.setProperty('--meteor-rotate', `${rotate}deg`);
+              meteor.style.animationDelay = `${Math.random() * 2}s`;
+             container.appendChild(meteor);
+         }
+       }
+        function toggleWeather() {
+            const body = document.body;
+            const container = document.querySelector('.container');
+            container.classList.toggle('active');
+            body.classList.toggle('night');
+        if (body.classList.contains('night')) {
+                generateStars();
+                generateMeteors();
+            } else {
+                resetStars();
+                resetMeteors();
+           }
+            const sun = document.querySelector('.sun');
+           if (container.classList.contains('active')) {
+                sun.style.transform = "translateX(-100%) scale(1)"
+            } else {
+                sun.style.transform = "";
+            }
+        }
+         function resetStars() {
+            const container = document.querySelector('.container');
+            const stars = document.querySelectorAll('.star-clouds');
+            stars.forEach(star => {
+               container.removeChild(star);
+          });
+      }
+         function resetMeteors() {
+            const container = document.querySelector('.container');
+            const meteors = document.querySelectorAll('.meteor');
+           meteors.forEach(meteor => {
+                container.removeChild(meteor);
+          });
+        }
+    </script>
+</body>
+</html>
